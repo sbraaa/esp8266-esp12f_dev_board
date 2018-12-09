@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet'>
+<link href='https://www.eyecon.ro/bootstrap-slider/css/slider.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap2/bootstrap-switch.min.css' rel='stylesheet'>
+<style>
+p { font-size: large; text-align: center; } 
+p#title { font-size: x-large; font-weight: bold; padding:10px;} 
+#RGB { height: 20px; background: rgb(128, 128, 128); } 
+#RC .slider-selection { background: #FF8282; } 
+#RC .slider-handle { background: red; } 
+#GC .slider-selection { background: #428041; } 
+#GC .slider-handle { background: green; } 
+#BC .slider-selection { background: #8283FF; }  
+#BC .slider-handle { border-bottom-color: blue; }  
+#R, #G, #B { width: 300px; }  
+.container { width: 90%;left: 0;right: 0;margin: auto; margin-bottom: 15px; }
+div.container div { text-align: center; }
+</style>
+</head><body>
+<p id='title'><span>ESP8266 Yellow board</p>
+<div class='container'>
+    <p>RGB Led control</p>
+    <p><b>R</b> <input type='text' class='span2' value='' data-slider-min='0' data-slider-max='255' data-slider-step='1' data-slider-value='128' data-slider-id='RC' id='R' data-slider-tooltip='hide' data-slider-handle='square' ></p>
+    <p><b>G</b> <input type='text' class='span2' value='' data-slider-min='0' data-slider-max='255' data-slider-step='1' data-slider-value='128' data-slider-id='GC' id='G' data-slider-tooltip='hide' data-slider-handle='round' ></p>
+    <p><b>B</b> <input type='text' class='span2' value='' data-slider-min='0' data-slider-max='255' data-slider-step='1' data-slider-value='128' data-slider-id='BC' id='B' data-slider-tooltip='hide' data-slider-handle='triangle' ></p>
+    <div id='RGB'></div>
+</div>
+<div class='container'>
+    <p>sm Led control</p>
+    <div>Led 1&nbsp;<input class="activate_led" type='checkbox' id='led1' ></div>
+    <div>Led 2&nbsp;<input class="activate_led" type='checkbox' id='led2' ></div>
+    <div>Led 3&nbsp;<input class="activate_led" type='checkbox' id='led3' ></div>
+    <div>Led 4&nbsp;<input class="activate_led" type='checkbox' id='led4' ></div>
+    <div>Led 5&nbsp;<input class="activate_led" type='checkbox' id='led5' ></div>
+    <div>Led 6&nbsp;<input class="activate_led" type='checkbox' id='led6' ></div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js'></script>
+<script src='https://www.eyecon.ro/bootstrap-slider/js/bootstrap-slider.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js'></script>
+<script>
+$( document ).ready(function() {
+    var RGBChange = debounce (function() { 
+            $('#RGB').css('background', 'rgb('+r.getValue()+','+g.getValue()+','+b.getValue()+')'); 
+            $.post( "setRGBLed?red="+r.getValue()+"&green="+g.getValue()+"&blue="+b.getValue(), function( data ) {
+                // nothing to do
+            });
+        }, 300);
+    var r = $('#R').slider().on('slide', RGBChange).data('slider');
+    var g = $('#G').slider().on('slide', RGBChange).data('slider');
+    var b = $('#B').slider().on('slide', RGBChange).data('slider');
+    $('.activate_led').bootstrapSwitch();
+    $('.activate_led').on("switchChange.bootstrapSwitch",function(e, data) {
+        var enable = this.checked?1:0;
+        $.post( "setLed?led="+this.id+"&enable="+enable, function( data ) {
+            // nothing to do
+        });
+    });
+
+    // https://davidwalsh.name/javascript-debounce-function
+    // Returns a function, that, as long as it continues to be invoked, will not
+    // be triggered. The function will be called after it stops being called for
+    // N milliseconds. If `immediate` is passed, trigger the function on the
+    // leading edge, instead of the trailing.
+    function debounce(func, wait, immediate) {
+	    var timeout;
+	    return function() {
+		    var context = this, args = arguments;
+		    var later = function() {
+			    timeout = null;
+			    if (!immediate) func.apply(context, args);
+		    };
+		    var callNow = immediate && !timeout;
+		    clearTimeout(timeout);
+		    timeout = setTimeout(later, wait);
+		    if (callNow) func.apply(context, args);
+	    };
+    };
+
+});
+</script></body></html>
+
